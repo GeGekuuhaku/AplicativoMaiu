@@ -1,40 +1,41 @@
 using System.Collections.ObjectModel;
 
 namespace AplicativoMaiu;
-public class Tarefa
+
+public sealed class Tarefa
 {
-public bool Concluida { get; set; }
+    public required string Nome { get; init; }
 
-public string Nome { get; set; }
-
+    public bool Concluida { get; set; }
 }
+
 public partial class Tarefas : ContentPage
 {
-    // ObservableCollection para atualizar a lista automaticamente
-    ObservableCollection<Tarefa> tasks;
+    private readonly ObservableCollection<Tarefa> _tarefas = [];
 
     public Tarefas()
     {
         InitializeComponent();
-        tasks = new ObservableCollection<Tarefa>();
-        taskListView.ItemsSource = tasks;
+        taskListView.ItemsSource = _tarefas;
     }
 
-    // adicionar nova tarefa
-    private void OnAddTaskClicked(object sender, EventArgs e)
+    private async void OnAddTaskClicked(object sender, EventArgs e)
     {
-        string newTask = taskEntry.Text;
+        var nome = taskEntry.Text?.Trim();
 
-        if (!string.IsNullOrWhiteSpace(newTask))
+        if (string.IsNullOrEmpty(nome))
         {
-            var tarefa = new Tarefa { Nome = newTask, Concluida = false };
-            tasks.Add(tarefa);
-            Console.WriteLine($"Tarefa adicionada: {tarefa.Nome}"); 
-            taskEntry.Text = string.Empty;
+            await DisplayAlert("Tarefa inv√°lida", "Digite uma tarefa antes de adicionar.", "OK");
+            return;
         }
-        else
+
+        _tarefas.Add(new Tarefa
         {
-            DisplayAlert("Erro", "A tarefa n„o pode estar vazia", "OK");
-        }
+            Nome = nome,
+            Concluida = false
+        });
+
+        taskEntry.Text = string.Empty;
+        taskEntry.Focus();
     }
 }
