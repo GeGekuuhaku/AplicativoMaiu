@@ -1,21 +1,46 @@
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="AplicativoMaiu.Tarefas">
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="AplicativoMaiu.Tarefas"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Tarefas">
 
-    <VerticalStackLayout Padding="20">
-        <Entry x:Name="taskEntry" Placeholder="Digite sua tarefa" />
-        <Button Text="Adicionar Tarefa" Clicked="OnAddTaskClicked" />
-        <ListView x:Name="taskListView">
-            <ListView.ItemTemplate>
+    <Grid Padding="20" RowDefinitions="Auto,*" RowSpacing="16">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <Entry
+                x:Name="taskEntry"
+                Grid.Column="0"
+                ClearButtonVisibility="WhileEditing"
+                Completed="OnAddTaskClicked"
+                Placeholder="Digite uma tarefa"
+                ReturnType="Done"
+                SemanticProperties.Description="Nome da nova tarefa" />
+
+            <Button
+                Grid.Column="1"
+                Clicked="OnAddTaskClicked"
+                SemanticProperties.Description="Adicionar nova tarefa"
+                Text="Adicionar" />
+        </Grid>
+
+        <CollectionView
+            x:Name="taskListView"
+            Grid.Row="1"
+            EmptyView="Nenhuma tarefa adicionada.">
+            <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <ViewCell>
-                        <HorizontalStackLayout>
-                            <CheckBox IsChecked="{Binding Concluida}" />
-                            <Label Text="{Binding Nome}" VerticalOptions="Center" />
-                        </HorizontalStackLayout>
-                    </ViewCell>
+                    <Grid Padding="4,8" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <CheckBox
+                            Grid.Column="0"
+                            IsChecked="{Binding Concluida, Mode=TwoWay}"
+                            SemanticProperties.Description="Marcar tarefa como concluída" />
+                        <Label
+                            Grid.Column="1"
+                            Text="{Binding Nome}"
+                            VerticalOptions="Center" />
+                    </Grid>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-    </VerticalStackLayout>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </Grid>
 </ContentPage>

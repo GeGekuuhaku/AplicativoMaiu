@@ -1,24 +1,22 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 
-public class TarefaItem
+namespace AplicativoMaiu;
+
+public sealed class TarefaItem
 {
-    public string Title { get; set; }
-    public bool IsCompleted { get; set; }
-    public ObservableCollection<SubtarefaItem> Subtasks { get; set; }
+    public required string Titulo { get; init; }
 
-    public TarefaItem()
-    { //n sei se eu vou meter subtarefa, mta mao
-        Subtasks = new ObservableCollection<SubtarefaItem>();
-    }
+    public bool Concluida { get; set; }
 
-    public bool AreSubtasksCompleted()
-    {
-        return Subtasks.All(subtask => subtask.IsCompleted);
-    }
+    public ObservableCollection<SubtarefaItem> Subtarefas { get; } = [];
+
+    public bool TodasSubtarefasConcluidas =>
+        Subtarefas.Count > 0 && Subtarefas.All(subtarefa => subtarefa.Concluida);
 }
 
-public class SubtarefaItem
+public sealed class SubtarefaItem
 {
-    public string Title { get; set; }
-    public bool IsCompleted { get; set; }
+    public required string Titulo { get; init; }
+
+    public bool Concluida { get; set; }
 }

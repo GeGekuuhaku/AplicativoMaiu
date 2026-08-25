@@ -1,0 +1,33 @@
+name: Build .NET MAUI
+
+on:
+  push:
+    branches:
+      - refactor/qualidade-codigo
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build-android:
+    name: Build Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install MAUI workload
+        run: dotnet workload install maui-android
+
+      - name: Restore
+        run: dotnet restore AplicativoMaiu/AplicativoMaiu.csproj -p:TargetFramework=net8.0-android
+
+      - name: Build
+        run: dotnet build AplicativoMaiu/AplicativoMaiu.csproj -c Release -f net8.0-android --no-restore
