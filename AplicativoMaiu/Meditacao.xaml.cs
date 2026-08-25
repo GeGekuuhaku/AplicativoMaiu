@@ -1,79 +1,96 @@
-using System.Timers;
+namespace AplicativoMaiu;
 
-namespace AplicativoMaiu
+public partial class Meditacao : ContentPage
 {
-    public partial class Meditacao : ContentPage
+    private readonly IDispatcherTimer _temporizador;
+    private TimeSpan _tempoRestante = TimeSpan.Zero;
+
+    public Meditacao()
     {
-        private System.Timers.Timer _temporizador;
-        private TimeSpan _tempoRestante;
-        private bool _isRunning;
+        InitializeComponent();
 
-        public Meditacao()
+        _temporizador = Dispatcher.CreateTimer();
+        _temporizador.Interval = TimeSpan.FromSeconds(1);
+        _temporizador.Tick += OnTemporizadorTick;
+    }
+
+    protected override void OnDisappearing()
+    {
+        _temporizador.Stop();
+        AtualizarEstadoDosBotoes();
+        base.OnDisappearing();
+    }
+
+    private void OnPickerSelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (pickerTempo.SelectedItem is not int minutos)
         {
-            InitializeComponent();
-            _temporizador = new System.Timers.Timer(1000);
-            _temporizador.Elapsed += OnTemporizadorElapsed;
-            _tempoRestante = TimeSpan.Zero;
+            return;
         }
 
-        private void OnPickerSelectedIndexChanged(object sender, EventArgs e)
+        _tempoRestante = TimeSpan.FromMinutes(minutos);
+        AtualizarCronometro();
+        AtualizarEstadoDosBotoes();
+    }
+
+    private void OnIniciarClicked(object sender, EventArgs e)
+    {
+        if (_tempoRestante <= TimeSpan.Zero || _temporizador.IsRunning)
         {
-            if (pickerTempo.SelectedIndex != -1)
-            {
-                int minutos = (int)pickerTempo.SelectedItem;
-                _tempoRestante = TimeSpan.FromMinutes(minutos);
-                lblCronometro.Text = _tempoRestante.ToString(@"mm\:ss");
-            }
+            return;
         }
 
-        private void OnIniciarClicked(object sender, EventArgs e)
-        {
-            if (!_isRunning && _tempoRestante.TotalSeconds > 0)
-            {
-                _isRunning = true;
-                _temporizador.Start();
-            }
-        }
+        _temporizador.Start();
+        AtualizarEstadoDosBotoes();
+    }
 
-        private void OnPararClicked(object sender, EventArgs e)
+    private void OnPararClicked(object sender, EventArgs e)
+    {
+        _temporizador.Stop();
+        AtualizarEstadoDosBotoes();
+    }
+
+    private void OnReiniciarClicked(object sender, EventArgs e)
+    {
+        _temporizador.Stop();
+
+        _tempoRestante = pickerTempo.SelectedItem is int minutos
+            ? TimeSpan.FromMinutes(minutos)
+            : TimeSpan.Zero;
+
+        AtualizarCronometro();
+        AtualizarEstadoDosBotoes();
+    }
+
+    private void OnTemporizadorTick(object? sender, EventArgs e)
+    {
+        if (_tempoRestante <= TimeSpan.Zero)
         {
-            _isRunning = false;
             _temporizador.Stop();
+            AtualizarEstadoDosBotoes();
+            return;
         }
 
-        private void OnReiniciarClicked(object sender, EventArgs e)
+        _tempoRestante -= TimeSpan.FromSeconds(1);
+        AtualizarCronometro();
+
+        if (_tempoRestante == TimeSpan.Zero)
         {
             _temporizador.Stop();
-            _isRunning = false;
-
-            if (pickerTempo.SelectedIndex != -1)
-            {
-                int minutos = (int)pickerTempo.SelectedItem;
-                _tempoRestante = TimeSpan.FromMinutes(minutos);
-                lblCronometro.Text = _tempoRestante.ToString(@"mm\:ss");
-            }
-        }
-
-        private void OnTemporizadorElapsed(object sender, ElapsedEventArgs e)
-        {
-            if (_tempoRestante.TotalSeconds > 0)
-            {
-                _tempoRestante = _tempoRestante.Add(TimeSpan.FromSeconds(-1));
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    lblCronometro.Text = _tempoRestante.ToString(@"mm\:ss");
-                });
-            }
-            else
-            {
-                _temporizador.Stop();
-                _isRunning = false;
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    lblCronometro.Text = "00:00";
-                });
-            }
+            AtualizarEstadoDosBotoes();
         }
     }
-}
 
+    private void AtualizarCronometro()
+    {
+        lblCronometro.Text = _tempoRestante.ToString(@"mm\:ss");
+    }
+
+    private void AtualizarEstadoDosBotoes()
+    {
+        btnIniciar.IsEnabled = !_temporizador.IsRunning && _tempoRestante > TimeSpan.Zero;
+        btnParar.IsEnabled = _temporizador.IsRunning;
+        btnReiniciar.IsEnabled = pickerTempo.SelectedItem is int;
+        pickerTempo.IsEnabled = !_temporizador.IsRunning;
+    }
+}
